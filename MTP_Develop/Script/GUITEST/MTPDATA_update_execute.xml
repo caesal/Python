@@ -1,0 +1,7 @@
+<aardvark>
+<i2c_write addr="0x37" count="11" nostop="0" radix="16">
+	51 85 C2 00 00 03 07 7C 00 01 FF
+</i2c_write>
+<i2c_read addr="0x37" count="8"></i2c_read>
+<sleep ms="1"/>
+</aardvark>

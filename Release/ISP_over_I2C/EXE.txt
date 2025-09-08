@@ -1,0 +1,3 @@
+pyinstaller --onefile --icon=I2C_application_icon.ico ^
+--add-data "jaguar-b0_mca_i2c_isp_driver_payload_Disable_WDT.bin;." ^
+I2CFW_GUI_Ver0.4.py
