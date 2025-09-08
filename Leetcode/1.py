@@ -9,3 +9,5 @@ def twoSum( nums, target):
                 return all_result
 
 twoSum([2,7,11,15], 9)
+
+#qweqweqweqwe
