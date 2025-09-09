@@ -1,4 +1,4 @@
-# Machine Learning Project Assignment Visualization.py
+# KNN Machine Learning Project Assignment Visualization.py
 
 import numpy as np
 import pandas as pd
