@@ -250,3 +250,7 @@ if __name__ == "__main__":
     deck = TarotDeck()
     picks = deck.draw(3)
     print_reading(picks,0) #exp = 1 to bring the brief explanation back
+    # For Better Result, put what you want to predict below everytime
+    #
+    #
+    #
