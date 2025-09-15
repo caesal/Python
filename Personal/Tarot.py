@@ -248,9 +248,9 @@ def print_reading(drawn: List[Tuple[str, str]], exp = True) -> None:
 
 if __name__ == "__main__":
     deck = TarotDeck()
-    picks = deck.draw(3)
+    picks = deck.draw(1)
     print_reading(picks,0) #exp = 1 to bring the brief explanation back
     # For Better Result, put what you want to predict below everytime
     #
-    #
+    # My CPT can be used next semester for work, pls
     #
