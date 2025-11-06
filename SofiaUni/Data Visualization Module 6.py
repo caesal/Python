@@ -1,66 +1,81 @@
+# Two clean visualizations (no saving, only plotting)
+
 import matplotlib.pyplot as plt
-import pandas as pd
-import networkx as nx
 
-# Dataset
-data = {
-    "Category": [
-        "species", "subspecies", "subspecies", "subspecies", "subspecies",
-        "species", "species", "subspecies", "subspecies", "subspecies", "subspecies", "subspecies"
+# --- Shared data ---
+species = [
+    ("Struthio camelus", "Common Ostrich", "Struthioniformes", "Struthionidae (Ostriches)"),
+    ("Struthio molybdophanes", "Somali Ostrich", "Struthioniformes", "Struthionidae (Ostriches)"),
+    ("Rhea americana", "Greater Rhea", "Rheiformes", "Rheidae (Rheas)"),
+]
+
+subspecies_map = {
+    "Struthio camelus": [
+        "Struthio camelus camelus",
+        "Struthio camelus syriacus",
+        "Struthio camelus massaicus",
+        "Struthio camelus australis",
     ],
-    "English name": [
-        "Common Ostrich", "", "", "", "", "Somali Ostrich", "Greater Rhea", "", "", "", "", ""
+    "Struthio molybdophanes": [],
+    "Rhea americana": [
+        "Rhea americana araneipes",
+        "Rhea americana americana",
+        "Rhea americana nobilis",
+        "Rhea americana albescens",
+        "Rhea americana intermedia",
     ],
-    "Scientific Name": [
-        "Struthio camelus", "Struthio camelus camelus", "Struthio camelus syriacus",
-        "Struthio camelus massaicus", "Struthio camelus australis", "Struthio molybdophanes",
-        "Rhea americana", "Rhea americana araneipes", "Rhea americana americana",
-        "Rhea americana nobilis", "Rhea americana albescens", "Rhea americana intermedia"
-    ],
-    "Order": [
-        "Struthioniformes", "Struthioniformes", "Struthioniformes", "Struthioniformes", "Struthioniformes",
-        "Struthioniformes", "Rheiformes", "Rheiformes", "Rheiformes", "Rheiformes", "Rheiformes", "Rheiformes"
-    ],
-    "Family": [
-        "Struthionidae (Ostriches)", "Struthionidae (Ostriches)", "Struthionidae (Ostriches)", "Struthionidae (Ostriches)", "Struthionidae (Ostriches)",
-        "Struthionidae (Ostriches)", "Rheidae (Rheas)", "Rheidae (Rheas)", "Rheidae (Rheas)", "Rheidae (Rheas)", "Rheidae (Rheas)", "Rheidae (Rheas)"
-    ]
 }
 
-df = pd.DataFrame(data)
+# --- Diagram 1: Linear / timeline-style connection ---
+fig = plt.figure(figsize=(11, 5))
 
-# Diagram 1: Linear timeline style of connections
-plt.figure(figsize=(10, 4))
-species_positions = {
-    "Struthio camelus": 1,
-    "Struthio molybdophanes": 2,
-    "Rhea americana": 3
-}
+x_levels = ["Order", "Family", "Species", "Subspecies"]
+xpos = {lvl: i for i, lvl in enumerate(x_levels)}
+lanes = {sp[0]: idx for idx, sp in enumerate(reversed(species))}
 
-# Plot species and subspecies along a timeline
-for _, row in df.iterrows():
-    x = 1 if "camelus" in row["Scientific Name"] else 2 if "molybdophanes" in row["Scientific Name"] else 3
-    plt.scatter(x, species_positions.get(row["Scientific Name"].split()[0], species_positions.get("Rhea americana")), color="teal", s=200)
-    plt.text(x + 0.05, species_positions.get(row["Scientific Name"].split()[0], 1) + 0.05, row["Scientific Name"], rotation=30, fontsize=8)
+for sp, eng, order, family in species:
+    y = lanes[sp]
+    plt.plot([xpos["Order"], xpos["Family"], xpos["Species"]], [y, y, y], marker="o", linewidth=2)
+    plt.text(xpos["Order"], y + 0.12, order, ha="center", va="bottom", fontsize=10)
+    plt.text(xpos["Family"], y + 0.12, family, ha="center", va="bottom", fontsize=10)
+    plt.text(xpos["Species"], y + 0.12, f"{sp}\n({eng})", ha="center", va="bottom", fontsize=10)
 
-plt.yticks([1, 2, 3], ["Common Ostrich", "Somali Ostrich", "Greater Rhea"])
-plt.title("Diagram 1: Linear Connection of Species and Subspecies")
-plt.xlabel("Timeline / Evolutionary Branch")
-plt.ylabel("Species")
-plt.grid(True, linestyle="--", alpha=0.6)
+    subs = sorted(subspecies_map.get(sp, []))
+    if subs:
+        offsets = [i - (len(subs) - 1) / 2 for i in range(len(subs))]
+        for off, sub in zip(offsets, subs):
+            y_sub = y + 0.3 * off
+            plt.plot([xpos["Species"], xpos["Subspecies"]], [y, y_sub], linestyle="--", linewidth=1)
+            plt.plot([xpos["Subspecies"]], [y_sub], marker="o")
+            plt.text(xpos["Subspecies"] + 0.02, y_sub, sub, ha="left", va="center", fontsize=9)
+
+plt.xticks(list(xpos.values()), x_levels)
+plt.yticks(list(lanes.values()), [f"{sp[0]} lane" for sp in reversed(species)])
+plt.title("Linear connection across taxonomy: Order → Family → Species → Subspecies", fontsize=13)
+plt.xlabel("Taxonomic level (left → right)")
+plt.ylabel("Species lanes")
+plt.grid(True, linestyle="--", alpha=0.4)
 plt.tight_layout()
 plt.show()
 
-# Diagram 2: Network focusing on scientific naming hierarchy within species
-G = nx.DiGraph()
-species = "Struthio camelus"
-G.add_node(species, label="Common Ostrich")
+# --- Diagram 2: Scientific-name-focused tree (within one species) ---
+focus = "Struthio camelus"
+children = sorted(subspecies_map[focus])
 
-for sub in df[df["Scientific Name"].str.startswith(species + " ")]["Scientific Name"]:
-    G.add_edge(species, sub)
+fig2 = plt.figure(figsize=(7, 5))
+root_x, root_y = 0.0, 0.5
 
-plt.figure(figsize=(8, 6))
-pos = nx.spring_layout(G, k=0.6, seed=42)
-nx.draw(G, pos, with_labels=True, node_color="lightgreen", node_size=2000, font_size=8, arrows=False)
-plt.title("Diagram 2: Scientific Naming Hierarchy within Common Ostrich (Struthio camelus)")
+if children:
+    ys = [0.8 - i * (0.6 / (len(children) - 1 if len(children) > 1 else 1)) for i in range(len(children))]
+    for y_sub, sub in zip(ys, children):
+        plt.plot([root_x, 0.6], [root_y, y_sub])  # edge
+        plt.plot(0.6, y_sub, marker="o")
+        short = sub.replace(focus + " ", "")
+        plt.text(0.62, y_sub, short, va="center", fontsize=10)
+
+plt.plot(root_x, root_y, marker="o")
+plt.text(root_x - 0.02, root_y, focus, ha="right", va="center", fontsize=11)
+plt.title("Scientific naming within one species: Struthio camelus", fontsize=13)
+plt.axis("off")
+plt.tight_layout()
 plt.show()
