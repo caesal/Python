@@ -26,7 +26,7 @@ def task1():
 # -----------------------------
 def print_numbers(name):
     for i in range(1, 6):
-        print(f"[Task 2] Process {name} PID {os.getpid()}: {i}")
+        print(f"[Task 2] Process {name} PID {os.getpid()}: {i}\n")
         time.sleep(1)
 
 def task2():
